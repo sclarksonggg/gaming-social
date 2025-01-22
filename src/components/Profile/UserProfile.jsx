@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { User, Users, MessageCircle } from 'lucide-react';
+import { User, Users, MessageCircle, Plus } from 'lucide-react';
 import ProfilePosts from './ProfilePosts';
+import AchievementShowcase from './AchievementShowcase';
 
 const UserProfile = ({ currentUser, setCurrentUser, userId, posts, onUserClick, onLike, onComment }) => {
   const [isOwnProfile, setIsOwnProfile] = useState(userId === null);
@@ -14,14 +15,17 @@ const UserProfile = ({ currentUser, setCurrentUser, userId, posts, onUserClick, 
     status: currentUser.status || 'offline'
   });
 
+  const [showAchievementForm, setShowAchievementForm] = useState(false);
+  const [newAchievement, setNewAchievement] = useState({
+    title: '',
+    description: '',
+    game: '',
+    earnedDate: ''
+  });
+
   const avatarColors = [
-    'bg-blue-500',
-    'bg-red-500',
-    'bg-green-500',
-    'bg-purple-500',
-    'bg-yellow-500',
-    'bg-pink-500',
-    'bg-indigo-500',
+    'bg-blue-500', 'bg-red-500', 'bg-green-500', 'bg-purple-500',
+    'bg-yellow-500', 'bg-pink-500', 'bg-indigo-500',
   ];
 
   useEffect(() => {
@@ -103,11 +107,33 @@ const UserProfile = ({ currentUser, setCurrentUser, userId, posts, onUserClick, 
     localStorage.setItem('users', JSON.stringify(updatedUsers));
   };
 
+  const handleAddAchievement = () => {
+    setShowAchievementForm(true);
+  };
+
+  const handleSaveAchievement = () => {
+    const updatedUser = {
+      ...currentUser,
+      achievements: [...(currentUser.achievements || []), newAchievement]
+    };
+    setCurrentUser(updatedUser);
+    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+    
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    const updatedUsers = users.map(user => 
+      user.id === currentUser.id ? updatedUser : user
+    );
+    localStorage.setItem('users', JSON.stringify(updatedUsers));
+    
+    setShowAchievementForm(false);
+    setNewAchievement({ title: '', description: '', game: '', earnedDate: '' });
+  };
+
   const isFollowing = currentUser.following?.includes(profileUser?.id);
 
   return (
     <div className="max-w-2xl mx-auto p-4">
-      <div className="bg-gray-900 rounded-lg p-6 space-y-6">
+    <div className="bg-gray-900 rounded-lg p-6 space-y-6">
         {/* Profile Header */}
         <div className="flex items-start space-x-4">
           <div className={`w-20 h-20 rounded-full flex-shrink-0 flex items-center justify-center ${profileData.avatarColor}`}>
@@ -239,18 +265,74 @@ const UserProfile = ({ currentUser, setCurrentUser, userId, posts, onUserClick, 
           </div>
         )}
 
-        {/* Profile Posts Section */}
-        {/* Profile Posts Section */}
-<div className="mt-8">
-  <ProfilePosts 
-    posts={posts}
-    userId={profileUser?.id || currentUser.id}
-    currentUser={currentUser}
-    onLike={onLike}
-    onComment={onComment}
-  />
-</div>
+  {/* Achievement Showcase */}
+  <div className="mt-8">
+        <AchievementShowcase 
+          achievements={currentUser.achievements || []}
+          onAddAchievement={handleAddAchievement}
+        />
       </div>
+
+        {/* Profile Posts Section */}
+        <div className="mt-8">
+          <ProfilePosts 
+            posts={posts}
+            userId={profileUser?.id || currentUser.id}
+            currentUser={currentUser}
+            onLike={onLike}
+            onComment={onComment}
+          />
+        </div>
+      </div>
+
+      {/* Achievement Form Modal */}
+      {showAchievementForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+          <div className="bg-gray-800 p-6 rounded-lg">
+            <h3 className="text-xl font-bold mb-4">Add New Achievement</h3>
+            <input
+              type="text"
+              placeholder="Achievement Title"
+              value={newAchievement.title}
+              onChange={(e) => setNewAchievement({...newAchievement, title: e.target.value})}
+              className="w-full p-2 mb-2 rounded bg-gray-700 text-white"
+            />
+            <textarea
+              placeholder="Description"
+              value={newAchievement.description}
+              onChange={(e) => setNewAchievement({...newAchievement, description: e.target.value})}
+              className="w-full p-2 mb-2 rounded bg-gray-700 text-white"
+            />
+            <input
+              type="text"
+              placeholder="Game"
+              value={newAchievement.game}
+              onChange={(e) => setNewAchievement({...newAchievement, game: e.target.value})}
+              className="w-full p-2 mb-2 rounded bg-gray-700 text-white"
+            />
+            <input
+              type="date"
+              value={newAchievement.earnedDate}
+              onChange={(e) => setNewAchievement({...newAchievement, earnedDate: e.target.value})}
+              className="w-full p-2 mb-4 rounded bg-gray-700 text-white"
+            />
+            <div className="flex justify-end space-x-2">
+              <button
+                onClick={() => setShowAchievementForm(false)}
+                className="px-4 py-2 bg-gray-600 rounded hover:bg-gray-700"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveAchievement}
+                className="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700"
+              >
+                Save Achievement
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
