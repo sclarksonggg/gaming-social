@@ -6,13 +6,12 @@ import DiscoverView from './components/Discover/DiscoverView';
 import HomeFeed from './components/Feed/HomeFeed';
 import CreatePost from './components/Post/CreatePost';
 import UserProfile from './components/Profile/UserProfile';
+import GroupChat from './components/Chat/GroupChat';
 
 function App() {
   const [currentView, setCurrentView] = useState('home');
   const [selectedUserId, setSelectedUserId] = useState(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    return localStorage.getItem('currentUser') !== null;
-  });
+  const [isLoggedIn, setIsLoggedIn] = useState(() => localStorage.getItem('currentUser') !== null);
   const [currentUser, setCurrentUser] = useState(() => {
     const savedUser = localStorage.getItem('currentUser');
     return savedUser ? JSON.parse(savedUser) : null;
@@ -25,15 +24,15 @@ function App() {
     const savedPosts = localStorage.getItem('posts');
     if (savedPosts) {
       const parsedPosts = JSON.parse(savedPosts);
-      const validatedPosts = parsedPosts.map(post => ({
+      return parsedPosts.map(post => ({
         ...post,
         likes: post.likes || [],
         comments: post.comments || []
       }));
-      return validatedPosts;
     }
     return [];
   });
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
   const handleLike = (postId) => {
     setPosts(prevPosts => {
@@ -70,11 +69,7 @@ function App() {
   };
 
   const handleUserClick = (userId) => {
-    if (userId === currentUser.id) {
-      setSelectedUserId(null);
-    } else {
-      setSelectedUserId(userId);
-    }
+    setSelectedUserId(userId === currentUser.id ? null : userId);
     setCurrentView('profile');
   };
 
@@ -88,6 +83,11 @@ function App() {
   const handleProfileClick = () => {
     setSelectedUserId(null);
     setCurrentView('profile');
+  };
+
+  const handleCategorySelect = (category) => {
+    setSelectedCategory(category);
+    setCurrentView('chat');
   };
 
   return (
@@ -116,19 +116,26 @@ function App() {
               <DiscoverView 
                 followedCategories={followedCategories}
                 setFollowedCategories={setFollowedCategories}
+                onCategorySelect={handleCategorySelect}
               />
             )}
-          {currentView === 'profile' && (
-  <UserProfile 
-    currentUser={currentUser}
-    setCurrentUser={setCurrentUser}
-    userId={selectedUserId}
-    posts={posts}
-    onUserClick={handleUserClick}
-    onLike={handleLike}
-    onComment={handleComment}
-  />
-)}
+            {currentView === 'profile' && (
+              <UserProfile 
+                currentUser={currentUser}
+                setCurrentUser={setCurrentUser}
+                userId={selectedUserId}
+                posts={posts}
+                onUserClick={handleUserClick}
+                onLike={handleLike}
+                onComment={handleComment}
+              />
+            )}
+            {currentView === 'chat' && (
+              <GroupChat 
+                currentUser={currentUser}
+                category={selectedCategory}
+              />
+            )}
           </main>
           <CreatePost 
             currentUser={currentUser}
