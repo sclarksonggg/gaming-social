@@ -1,41 +1,44 @@
 import React from 'react';
-import { initialCategories } from '../../utils/constants';
 
-const DiscoverView = ({ followedCategories, setFollowedCategories }) => {
-  const handleFollowCategory = (category) => {
-    if (followedCategories.find(c => c.id === category.id)) {
-      const newCategories = followedCategories.filter(c => c.id !== category.id);
-      setFollowedCategories(newCategories);
-      localStorage.setItem('followedCategories', JSON.stringify(newCategories));
-    } else {
-      const newCategories = [...followedCategories, category];
-      setFollowedCategories(newCategories);
-      localStorage.setItem('followedCategories', JSON.stringify(newCategories));
-    }
+const DiscoverView = ({ followedCategories, setFollowedCategories, onCategorySelect }) => {
+  const categories = ['Gaming', 'Technology', 'Movies', 'Music', 'Sports'];
+
+  const toggleFollow = (category) => {
+    setFollowedCategories(prev => 
+      prev.includes(category)
+        ? prev.filter(c => c !== category)
+        : [...prev, category]
+    );
   };
 
   return (
-    <div className="grid grid-cols-2 gap-4 p-4 pb-16">
-      {initialCategories.map(category => (
-        <div 
-          key={category.id}
-          className={`p-4 rounded-lg ${category.color}`}
-        >
-          <h3 className="text-xl font-bold mb-2">{category.name}</h3>
-          <button
-            onClick={() => handleFollowCategory(category)}
-            className={`px-4 py-2 rounded-full ${
-              followedCategories.find(c => c.id === category.id)
-                ? 'bg-white text-black'
-                : 'bg-black bg-opacity-50 text-white'
-            }`}
-          >
-            {followedCategories.find(c => c.id === category.id)
-              ? 'Following'
-              : 'Follow'}
-          </button>
-        </div>
-      ))}
+    <div className="p-4">
+      <h2 className="text-2xl font-bold mb-4">Discover Categories</h2>
+      <div className="space-y-4">
+        {categories.map(category => (
+          <div key={category} className="flex items-center justify-between bg-gray-800 p-4 rounded-lg">
+            <span className="text-lg">{category}</span>
+            <div>
+              <button
+                onClick={() => toggleFollow(category)}
+                className={`mr-2 px-4 py-2 rounded ${
+                  followedCategories.includes(category)
+                    ? 'bg-red-500 hover:bg-red-600'
+                    : 'bg-blue-500 hover:bg-blue-600'
+                }`}
+              >
+                {followedCategories.includes(category) ? 'Unfollow' : 'Follow'}
+              </button>
+              <button
+                onClick={() => onCategorySelect(category)}
+                className="px-4 py-2 bg-green-500 hover:bg-green-600 rounded"
+              >
+                Join Chat
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

@@ -85,11 +85,6 @@ function App() {
     setCurrentView('profile');
   };
 
-  const handleCategorySelect = (category) => {
-    setSelectedCategory(category);
-    setCurrentView('chat');
-  };
-
   return (
     <div className="min-h-screen bg-black text-white">
       {!isLoggedIn ? (
@@ -116,7 +111,10 @@ function App() {
               <DiscoverView 
                 followedCategories={followedCategories}
                 setFollowedCategories={setFollowedCategories}
-                onCategorySelect={handleCategorySelect}
+                onCategorySelect={(category) => {
+                  setSelectedCategory(category);
+                  setCurrentView('chat');
+                }}
               />
             )}
             {currentView === 'profile' && (
